@@ -3,34 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community Upload Gallery</title>
+  <title>Upload Test</title>
   <style>
-      /* Basic Styles */
       body {
           font-family: Arial, sans-serif;
           padding: 20px;
           background-color: #f4f7fc;
       }
-
       h1 {
           font-size: 2rem;
           margin-bottom: 20px;
       }
-
       h2 {
           font-size: 1.5rem;
           margin-bottom: 10px;
       }
-
       section {
           margin-bottom: 30px;
       }
-
       label {
           font-weight: bold;
           margin-bottom: 8px;
       }
-
       input[type="file"], textarea {
           width: 100%;
           padding: 10px;
@@ -39,7 +33,6 @@
           border: 1px solid #ccc;
           font-size: 1rem;
       }
-
       button {
           padding: 10px 20px;
           background-color: #007bff;
@@ -49,33 +42,20 @@
           font-size: 1rem;
           cursor: pointer;
       }
-
       button:hover {
           background-color: #0056b3;
       }
-
       #upload-status {
           font-size: 1.1rem;
           margin-top: 10px;
           font-weight: bold;
       }
-
       #upload-section {
           display: none;
       }
-
       #admin-access {
           margin-top: 20px;
       }
-
-      /* Banned IPs Message */
-      #banned-message {
-          display: none;
-          color: red;
-          font-weight: bold;
-          font-size: 1.5rem;
-      }
-
   </style>
   <script>
     // Fetch user IP from ipchecker
@@ -141,36 +121,9 @@
       }
     }
 
-    // Admin check for access (check in admin.html)
-    if (window.location.pathname.includes("admin.html")) {
-        window.onload = checkAdminAccess;
-    }
-
-    function checkAdminAccess() {
-        const password = prompt("Enter Admin Password:");
-        if (password === adminPassword) {
-            document.getElementById("admin-panel").style.display = "block";
-            loadPendingUploads();
-        } else {
-            alert("Incorrect password.");
-            window.location.href = "index.html";
-        }
-    }
-
-    // Admin approve/reject functions (mock)
-    function approveUpload(id) {
-        alert(`Approved upload with ID: ${id}`);
-    }
-
-    function rejectUpload(id) {
-        alert(`Rejected upload with ID: ${id}`);
-    }
   </script>
 </head>
 <body>
-
-  <!-- Banned Message (Hidden by default) -->
-  <div id="banned-message">You are banned from uploading images to this site.</div>
 
   <!-- User Upload Form -->
   <section id="upload-section">
@@ -192,3 +145,4 @@
 
 </body>
 </html>
+
