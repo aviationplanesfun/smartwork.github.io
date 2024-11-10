@@ -78,20 +78,6 @@
 
   </style>
   <script>
-    // Password for the admin panel
-    const adminPassword = "amongus";
-
-    // Function to prompt for password and redirect to admin page
-    function promptAdminPassword() {
-      const password = prompt("Enter Admin Password:");
-      if (password === adminPassword) {
-        // Redirect to admin page
-        window.location.href = "admin.html";
-      } else {
-        alert("Incorrect password.");
-      }
-    }
-
     // Fetch user IP from ipchecker
     fetch('https://checkip.amazonaws.com/')
         .then(response => response.text())
@@ -141,7 +127,25 @@
         }
     });
 
-    // Check for admin access on admin.html load
+    // Password for the admin panel
+    const adminPassword = "amongus";
+
+    // Function to prompt for password and redirect to admin page
+    function promptAdminPassword() {
+      const password = prompt("Enter Admin Password:");
+      if (password === adminPassword) {
+        // Redirect to admin page
+        window.location.href = "admin.html";
+      } else {
+        alert("Incorrect password.");
+      }
+    }
+
+    // Admin check for access (check in admin.html)
+    if (window.location.pathname.includes("admin.html")) {
+        window.onload = checkAdminAccess;
+    }
+
     function checkAdminAccess() {
         const password = prompt("Enter Admin Password:");
         if (password === adminPassword) {
@@ -153,31 +157,6 @@
         }
     }
 
-    // Mock function to load pending uploads (mocked data)
-    function loadPendingUploads() {
-        const pendingUploads = [
-            { id: 1, file: "image1.jpg", description: "First image" },
-            { id: 2, file: "image2.jpg", description: "Second image" }
-        ];
-
-        const pendingList = document.getElementById("pending-list");
-        pendingList.innerHTML = "";
-
-        pendingUploads.forEach((upload) => {
-            const uploadDiv = document.createElement("div");
-            uploadDiv.classList.add("pending-upload");
-
-            uploadDiv.innerHTML = `
-              <p><strong>${upload.description}</strong></p>
-              <img src="${upload.file}" alt="${upload.description}" width="150">
-              <button onclick="approveUpload(${upload.id})">Approve</button>
-              <button onclick="rejectUpload(${upload.id})">Reject</button>
-            `;
-
-            pendingList.appendChild(uploadDiv);
-        });
-    }
-
     // Admin approve/reject functions (mock)
     function approveUpload(id) {
         alert(`Approved upload with ID: ${id}`);
@@ -185,11 +164,6 @@
 
     function rejectUpload(id) {
         alert(`Rejected upload with ID: ${id}`);
-    }
-
-    // Run checkAdminAccess only if on admin.html
-    if (window.location.pathname.includes("admin.html")) {
-        window.onload = checkAdminAccess;
     }
   </script>
 </head>
