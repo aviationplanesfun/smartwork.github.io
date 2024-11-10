@@ -14,69 +14,61 @@
             margin-top: 20px;
         }
 
-        .ip-list, .image-list {
+        .ip-list, .banned-ips-list {
             margin-top: 20px;
         }
 
         .banned {
             color: red;
         }
-
-        .approved {
-            color: green;
-        }
     </style>
 </head>
 <body>
 
-<h1>IP Tracking, Image Upload, and Admin Panel</h1>
+<h1>IP Tracking and Admin Panel</h1>
 
 <!-- IP Display Section -->
 <p>Your IP Address: <span id="user-ip"></span></p>
-<button onclick="fetchAndLogIP()">Get My IP</button>
-
-<!-- Image Upload Section -->
-<h3>Upload Image:</h3>
-<input type="file" id="image-upload" onchange="uploadImage()">
-<div id="upload-status"></div>
 
 <div id="admin-panel">
     <h2>Admin Panel</h2>
     
-    <!-- Image Approval Section -->
-    <h3>Images Waiting for Approval:</h3>
-    <div id="image-list" class="image-list"></div>
+    <!-- Last IPs Section -->
+    <h3>Last IPs:</h3>
+    <div id="ip-list" class="ip-list"></div>
     
     <!-- IP Ban Section -->
-    <h3>IP Ban</h3>
+    <h3>Ban an IP:</h3>
     <label for="ban-ip">Ban an IP:</label>
     <input type="text" id="ban-ip" placeholder="Enter IP to ban">
     <button onclick="banIP()">Ban IP</button>
-    <div id="banned-ips" class="banned-ips">
-        <h3>Banned IPs:</h3>
-        <ul id="banned-ip-list"></ul>
-    </div>
+
+    <h3>Banned IPs:</h3>
+    <ul id="banned-ip-list" class="banned-ips-list"></ul>
+    
+    <h3>Unban an IP:</h3>
+    <label for="unban-ip">Unban an IP:</label>
+    <input type="text" id="unban-ip" placeholder="Enter IP to unban">
+    <button onclick="unbanIP()">Unban IP</button>
 </div>
 
 <script>
 // Global variables
 const ipList = []; // To track recent IPs
 const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || []; // Load banned IPs from localStorage
-const pendingImages = JSON.parse(localStorage.getItem("pendingImages")) || []; // Load pending images
-const approvedImages = JSON.parse(localStorage.getItem("approvedImages")) || []; // Load approved images
 
-// Function to fetch and display user IP
+// Fetch user IP and display it
 function fetchAndLogIP() {
     fetch('https://checkip.amazonaws.com/')
         .then(response => response.text())
         .then(ip => {
             document.getElementById("user-ip").innerText = ip;
-            logIP(ip); // Log IP when it is fetched
+            logIP(ip); // Log the IP when it is fetched
         })
         .catch(err => console.error('Failed to fetch IP:', err));
 }
 
-// Function to log IP and display it in the admin panel
+// Log IP and display it in the admin panel
 function logIP(ip) {
     if (!ipList.includes(ip)) {
         ipList.push(ip);
@@ -85,7 +77,7 @@ function logIP(ip) {
     checkIfBanned(ip);
 }
 
-// Function to update the list of logged IPs in the admin panel
+// Update the list of recently logged IPs in the admin panel
 function updateIPList() {
     const ipListElement = document.getElementById("ip-list");
     ipListElement.innerHTML = ""; // Clear previous list
@@ -97,15 +89,15 @@ function updateIPList() {
     });
 }
 
-// Function to check if the user is banned
+// Check if the current user is banned
 function checkIfBanned(currentUserIP) {
     if (bannedIPs.includes(currentUserIP)) {
-        alert('You have been banned from this site!');
-        window.location.href = "about:blank"; // Redirect to a blank page if banned
+        // Redirect to a "banned" page if the user is banned
+        window.location.href = "/banned.html"; // Redirect to a page saying "You are banned"
     }
 }
 
-// Function to ban an IP
+// Ban an IP address
 function banIP() {
     const ipToBan = document.getElementById("ban-ip").value.trim();
     if (ipToBan && !bannedIPs.includes(ipToBan)) {
@@ -118,7 +110,21 @@ function banIP() {
     }
 }
 
-// Function to update the banned IP list in the admin panel
+// Unban an IP address
+function unbanIP() {
+    const ipToUnban = document.getElementById("unban-ip").value.trim();
+    const index = bannedIPs.indexOf(ipToUnban);
+    if (index !== -1) {
+        bannedIPs.splice(index, 1);
+        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs)); // Save updated banned IPs
+        updateBannedIPList();
+        alert(`IP ${ipToUnban} has been unbanned!`);
+    } else {
+        alert('IP is not banned.');
+    }
+}
+
+// Update the banned IP list in the admin panel
 function updateBannedIPList() {
     const bannedIPListElement = document.getElementById("banned-ip-list");
     bannedIPListElement.innerHTML = ""; // Clear previous list
@@ -131,75 +137,12 @@ function updateBannedIPList() {
     });
 }
 
-// Function to upload an image (simulated)
-function uploadImage() {
-    const imageFile = document.getElementById("image-upload").files[0];
-    if (imageFile) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const imageData = e.target.result;
-            const imageId = Date.now(); // Use timestamp as unique ID
-            const image = {
-                id: imageId,
-                imageData: imageData,
-                fileName: imageFile.name,
-                status: 'pending' // Initially marked as pending
-            };
-            pendingImages.push(image);
-            localStorage.setItem("pendingImages", JSON.stringify(pendingImages)); // Save pending images
-            updateImageList();
-            document.getElementById("upload-status").innerText = 'Image uploaded successfully, waiting for approval.';
-        };
-        reader.readAsDataURL(imageFile);
-    }
-}
-
-// Function to approve or reject an image
-function approveImage(imageId) {
-    const imageIndex = pendingImages.findIndex(img => img.id === imageId);
-    if (imageIndex >= 0) {
-        const image = pendingImages.splice(imageIndex, 1)[0];
-        image.status = 'approved';
-        approvedImages.push(image);
-        localStorage.setItem("pendingImages", JSON.stringify(pendingImages)); // Save updated pending images
-        localStorage.setItem("approvedImages", JSON.stringify(approvedImages)); // Save approved images
-        updateImageList();
-        alert(`Image "${image.fileName}" approved!`);
-    }
-}
-
-function rejectImage(imageId) {
-    const imageIndex = pendingImages.findIndex(img => img.id === imageId);
-    if (imageIndex >= 0) {
-        pendingImages.splice(imageIndex, 1);
-        localStorage.setItem("pendingImages", JSON.stringify(pendingImages)); // Save updated pending images
-        updateImageList();
-        alert(`Image rejected!`);
-    }
-}
-
-// Function to update the image list (pending and approved)
-function updateImageList() {
-    const imageListElement = document.getElementById("image-list");
-    imageListElement.innerHTML = ""; // Clear previous list
-
-    pendingImages.forEach(image => {
-        const imageItem = document.createElement("div");
-        imageItem.innerHTML = `
-            <img src="${image.imageData}" alt="${image.fileName}" style="width: 100px; height: auto;"/>
-            <span>${image.fileName}</span>
-            <button onclick="approveImage(${image.id})">Approve</button>
-            <button onclick="rejectImage(${image.id})">Reject</button>
-        `;
-        imageListElement.appendChild(imageItem);
-    });
-}
-
 // Initialize lists when page loads
-updateImageList();
+fetchAndLogIP();
 updateBannedIPList();
 
 </script>
 
 </body>
 </html>
+
