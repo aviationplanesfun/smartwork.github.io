@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Admin Panel - Community Upload Gallery</title>
     <script src="script.js" defer></script>
     <style>
         /* General body and layout styling */
@@ -17,6 +17,7 @@
             align-items: center;
             min-height: 100vh;
         }
+
         h1 {
             color: #333;
             text-align: center;
@@ -34,38 +35,37 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Title styling for subsections */
-        h2 {
-            font-size: 1.5rem;
-            color: #444;
+        /* Admin Panel */
+        #admin-panel {
+            display: none;
         }
 
-        /* IP list styling */
-        .ip-list, .upload-list {
+        /* Image Approval Section */
+        #pending-uploads {
             margin-top: 20px;
         }
 
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        li {
-            background-color: #fafafa;
+        .pending-upload {
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
             border: 1px solid #ddd;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
-        li span {
-            color: #333;
+        .pending-upload img {
+            max-width: 150px;
+            max-height: 150px;
+            margin-right: 20px;
         }
 
-        /* Button styling */
+        .pending-upload p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        /* Action buttons */
         .action-btn {
             background-color: #007bff;
             color: white;
@@ -75,163 +75,215 @@
             cursor: pointer;
             font-size: 0.9rem;
             transition: background-color 0.3s ease;
+            margin-right: 10px;
         }
 
         .action-btn:hover {
             background-color: #0056b3;
         }
 
-        .ban-btn {
-            background-color: #dc3545;
+        /* Ban List Section */
+        #banned-ips {
+            margin-top: 40px;
         }
 
-        .unban-btn {
-            background-color: #28a745;
+        /* IP Actions */
+        #banned-ips button {
+            background-color: #e74c3c;
+            color: white;
         }
 
-        .ban-btn:hover {
-            background-color: #c82333;
+        #banned-ips button:hover {
+            background-color: #c0392b;
         }
 
-        .unban-btn:hover {
-            background-color: #218838;
+        #footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #888;
         }
 
-        /* Admin panel layout */
-        .admin-panel {
-            width: 100%;
-            max-width: 1000px;
+        .ip-list {
+            list-style-type: none;
+            padding: 0;
         }
 
-        .section-container {
-            margin-bottom: 30px;
+        .ip-list li {
+            margin: 10px 0;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
-        .action-btn-container {
-            display: flex;
-            gap: 10px;
+        .ip-list li span {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .ip-list li button {
+            background-color: #2ecc71;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .ip-list li button:hover {
+            background-color: #27ae60;
         }
     </style>
 </head>
 <body>
 
-<h1>Admin Panel</h1>
+    <h1>Admin Panel - Community Upload Gallery</h1>
 
-<section class="section-container">
-    <h2>Latest IPs</h2>
-    <div class="ip-list">
-        <ul id="ip-list"></ul>
-    </div>
-</section>
+    <!-- Admin Panel -->
+    <section id="admin-panel">
+        <h2>Pending Image Approvals</h2>
+        <div id="pending-uploads">
+            <!-- Pending uploads will be listed here -->
+        </div>
 
-<section class="section-container">
-    <h2>Pending Uploads</h2>
-    <div class="upload-list">
-        <ul id="pending-list"></ul>
-    </div>
-</section>
+        <h2>Banned IPs</h2>
+        <div id="banned-ips">
+            <ul id="banned-list" class="ip-list">
+                <!-- Banned IPs will be displayed here -->
+            </ul>
+        </div>
 
-<script>
-    // Admin password check
-    const adminPassword = "amongus";
+        <h2>Recent User IPs</h2>
+        <button class="action-btn" onclick="loadRecentIPs()">Load Recent IPs</button>
+        <ul id="recent-ips" class="ip-list">
+            <!-- Recent IPs will be listed here -->
+        </ul>
+    </section>
 
-    function checkAdminAccess() {
-        const password = prompt("Enter Admin Password:");
-        if (password === adminPassword) {
-            document.getElementById("admin-panel").style.display = "block";
-            loadPendingUploads();
-            loadLatestIPs();
-        } else {
-            alert("Incorrect password.");
-            window.location.href = "index.html";
+    <script>
+        // Admin password for access
+        const adminPassword = "amongus";
+
+        // Function to prompt for password and redirect to admin page
+        function checkAdminAccess() {
+            const password = prompt("Enter Admin Password:");
+            if (password === adminPassword) {
+                document.getElementById("admin-panel").style.display = "block";
+                loadPendingUploads();
+                loadRecentIPs();
+                loadBannedIPs();
+            } else {
+                alert("Incorrect password.");
+                window.location.href = "index.html";
+            }
         }
-    }
 
-    // Load the latest IPs (from localStorage)
-    function loadLatestIPs() {
-        const recentIPs = JSON.parse(localStorage.getItem("recentIPs")) || [];
-        const ipList = document.getElementById("ip-list");
-        ipList.innerHTML = "";
+        // Mock function to load pending uploads from LocalStorage
+        function loadPendingUploads() {
+            const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
+            const pendingList = document.getElementById("pending-uploads");
+            pendingList.innerHTML = ""; // Clear current list
 
-        recentIPs.forEach(ip => {
-            const ipItem = document.createElement("li");
-            ipItem.classList.add("ip-item");
-            ipItem.innerHTML = `
-                <span>${ip}</span>
-                <div class="action-btn-container">
-                    <button class="action-btn ban-btn" onclick="banIP('${ip}')">Ban</button>
-                </div>
-            `;
-            ipList.appendChild(ipItem);
-        });
-    }
+            pendingUploads.forEach((upload) => {
+                if (upload.status === "pending") {
+                    const uploadDiv = document.createElement("div");
+                    uploadDiv.classList.add("pending-upload");
 
-    // Ban IP
-    function banIP(ip) {
-        const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
-        if (!bannedIPs.includes(ip)) {
-            bannedIPs.push(ip);
-            localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
-            alert(`${ip} has been banned.`);
-            loadLatestIPs();  // Refresh IP list
-        }
-    }
-
-    // Unban IP
-    function unbanIP(ip) {
-        let bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
-        bannedIPs = bannedIPs.filter(bannedIp => bannedIp !== ip);
-        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
-        alert(`${ip} has been unbanned.`);
-        loadLatestIPs();  // Refresh IP list
-    }
-
-    // Load pending image uploads (from localStorage)
-    function loadPendingUploads() {
-        const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
-        const pendingList = document.getElementById("pending-list");
-        pendingList.innerHTML = "";
-
-        pendingUploads.forEach(upload => {
-            if (upload.status === "pending") {
-                const uploadItem = document.createElement("li");
-                uploadItem.classList.add("upload-item");
-                uploadItem.innerHTML = `
-                    <span>${upload.description}</span>
-                    <div class="action-btn-container">
+                    uploadDiv.innerHTML = `
+                        <p><strong>${upload.description}</strong></p>
+                        <img src="${upload.file}" alt="${upload.description}">
                         <button class="action-btn" onclick="approveUpload(${upload.id})">Approve</button>
                         <button class="action-btn" onclick="rejectUpload(${upload.id})">Reject</button>
-                    </div>
-                `;
-                pendingList.appendChild(uploadItem);
-            }
-        });
-    }
+                    `;
 
-    // Approve Image
-    function approveUpload(id) {
-        const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
-        const upload = pendingUploads.find(upload => upload.id === id);
-        if (upload) {
-            upload.status = "approved";
-            localStorage.setItem("imageRequests", JSON.stringify(pendingUploads));
-            alert(`Approved upload with ID: ${id}`);
-            loadPendingUploads();  // Refresh list
+                    pendingList.appendChild(uploadDiv);
+                }
+            });
         }
-    }
 
-    // Reject Image
-    function rejectUpload(id) {
-        const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
-        const filteredUploads = pendingUploads.filter(upload => upload.id !== id);
-        localStorage.setItem("imageRequests", JSON.stringify(filteredUploads));
-        alert(`Rejected upload with ID: ${id}`);
-        loadPendingUploads();  // Refresh list
-    }
+        // Admin approve/reject functions
+        function approveUpload(id) {
+            const imageRequests = JSON.parse(localStorage.getItem("imageRequests")) || [];
+            const upload = imageRequests.find((upload) => upload.id === id);
+            if (upload) {
+                upload.status = "approved";
+                localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
+                alert("Upload approved!");
+                loadPendingUploads();
+            }
+        }
 
-    // Run checkAdminAccess only if on admin.html
-    window.onload = checkAdminAccess;
-</script>
+        function rejectUpload(id) {
+            const imageRequests = JSON.parse(localStorage.getItem("imageRequests")) || [];
+            const index = imageRequests.findIndex((upload) => upload.id === id);
+            if (index !== -1) {
+                imageRequests.splice(index, 1); // Remove the rejected upload
+                localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
+                alert("Upload rejected!");
+                loadPendingUploads();
+            }
+        }
 
+        // Load recent IPs
+        function loadRecentIPs() {
+            const recentIPs = JSON.parse(localStorage.getItem("recentIPs")) || [];
+            const recentList = document.getElementById("recent-ips");
+            recentList.innerHTML = ""; // Clear current list
+
+            recentIPs.forEach((ip) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <span>${ip}</span>
+                    <button class="action-btn" onclick="banIP('${ip}')">Ban</button>
+                `;
+                recentList.appendChild(li);
+            });
+        }
+
+        // Ban IP
+        function banIP(ip) {
+            const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+            if (!bannedIPs.includes(ip)) {
+                bannedIPs.push(ip);
+                localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+                alert(`IP ${ip} has been banned.`);
+                loadBannedIPs();
+            }
+        }
+
+        // Unban IP
+        function unbanIP(ip) {
+            const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+            const index = bannedIPs.indexOf(ip);
+            if (index !== -1) {
+                bannedIPs.splice(index, 1);
+                localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+                alert(`IP ${ip} has been unbanned.`);
+                loadBannedIPs();
+            }
+        }
+
+        // Load banned IPs
+        function loadBannedIPs() {
+            const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+            const bannedList = document.getElementById("banned-list");
+            bannedList.innerHTML = ""; // Clear current list
+
+            bannedIPs.forEach((ip) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <span>${ip}</span>
+                    <button class="action-btn" onclick="unbanIP('${ip}')">Unban</button>
+                `;
+                bannedList.appendChild(li);
+            });
+        }
+
+        // Run the admin access check on page load
+        window.onload = checkAdminAccess;
+    </script>
 </body>
 </html>
