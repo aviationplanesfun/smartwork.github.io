@@ -3,149 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP Tracking and Admin Panel</title>
+    <title>Admin Panel</title>
     <style>
+        /* Basic Styles for Admin Panel */
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
         }
 
-        #admin-panel {
+        h1 {
+            font-size: 2rem;
+        }
+
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        input[type="text"] {
+            width: 200px;
+        }
+
+        .ip-list, .banned-ip-list {
             margin-top: 20px;
         }
 
-        .ip-list, .banned-ips-list {
-            margin-top: 20px;
-        }
-
-        .banned {
-            color: red;
+        .ip-list div, .banned-ip-list div {
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
 
-<h1>IP Tracking and Admin Panel</h1>
+<h1>Admin Panel</h1>
 
-<!-- IP Display Section -->
-<p>Your IP Address: <span id="user-ip"></span></p>
-
-<div id="admin-panel">
-    <h2>Admin Panel</h2>
-    
-    <!-- Last IPs Section -->
-    <h3>Last IPs:</h3>
-    <div id="ip-list" class="ip-list"></div>
-    
-    <!-- IP Ban Section -->
-    <h3>Ban an IP:</h3>
-    <label for="ban-ip">Ban an IP:</label>
+<!-- Ban IP Section -->
+<div>
+    <h3>Ban an IP Address</h3>
     <input type="text" id="ban-ip" placeholder="Enter IP to ban">
     <button onclick="banIP()">Ban IP</button>
+</div>
 
-    <h3>Banned IPs:</h3>
-    <ul id="banned-ip-list" class="banned-ips-list"></ul>
-    
-    <h3>Unban an IP:</h3>
-    <label for="unban-ip">Unban an IP:</label>
+<!-- Unban IP Section -->
+<div>
+    <h3>Unban an IP Address</h3>
     <input type="text" id="unban-ip" placeholder="Enter IP to unban">
     <button onclick="unbanIP()">Unban IP</button>
 </div>
 
+<!-- Image Upload Section -->
+<div>
+    <h3>Approve Image Requests</h3>
+    <input type="file" id="image-upload">
+    <button onclick="uploadImage()">Upload Image</button>
+    <div id="image-requests"></div>
+</div>
+
+<!-- Last IPs Section -->
+<div>
+    <h3>Last IPs:</h3>
+    <div id="ip-list" class="ip-list"></div>
+</div>
+
+<!-- Banned IPs Section -->
+<div>
+    <h3>Banned IPs:</h3>
+    <div id="banned-ip-list" class="banned-ip-list"></div>
+</div>
+
 <script>
-// Global variables
-const ipList = JSON.parse(localStorage.getItem("recentIPs")) || []; // Load recent IPs from localStorage
-const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || []; // Load banned IPs from localStorage
+    // Get IP List and Banned IP List from LocalStorage
+    const ipList = JSON.parse(localStorage.getItem("recentIPs")) || [];
+    const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+    const imageRequests = JSON.parse(localStorage.getItem("imageRequests")) || [];
 
-// Fetch user IP and display it
-function fetchAndLogIP() {
-    fetch('https://checkip.amazonaws.com/')
-        .then(response => response.text())
-        .then(ip => {
-            document.getElementById("user-ip").innerText = ip;
-            logIP(ip); // Log the IP when it is fetched
-            checkIfBanned(ip); // Check if this IP is banned
-        })
-        .catch(err => console.error('Failed to fetch IP:', err));
-}
-
-// Log IP and display it in the admin panel
-function logIP(ip) {
-    // Avoid duplicate IPs
-    if (!ipList.includes(ip)) {
-        ipList.push(ip);
-        // Save the list of recent IPs to localStorage
-        localStorage.setItem("recentIPs", JSON.stringify(ipList));
+    // Show recent IPs
+    function updateIPList() {
+        const ipListElement = document.getElementById("ip-list");
+        ipListElement.innerHTML = ""; // Clear list
+        ipList.forEach(ip => {
+            const ipItem = document.createElement("div");
+            ipItem.textContent = ip;
+            ipListElement.appendChild(ipItem);
+        });
     }
-    updateIPList(); // Update the IP list in the admin panel
-}
 
-// Check if the current user is banned
-function checkIfBanned(currentUserIP) {
-    if (bannedIPs.includes(currentUserIP)) {
-        // Redirect to a "banned" page if the user is banned
-        window.location.href = "/banned.html"; // Redirect to a page saying "You are banned"
+    // Show Banned IPs
+    function updateBannedIPList() {
+        const bannedIPListElement = document.getElementById("banned-ip-list");
+        bannedIPListElement.innerHTML = ""; // Clear list
+        bannedIPs.forEach(ip => {
+            const ipItem = document.createElement("div");
+            ipItem.textContent = ip;
+            bannedIPListElement.appendChild(ipItem);
+        });
     }
-}
 
-// Ban an IP address
-function banIP() {
-    const ipToBan = document.getElementById("ban-ip").value.trim();
-    if (ipToBan && !bannedIPs.includes(ipToBan)) {
-        bannedIPs.push(ipToBan);
-        // Save banned IPs to localStorage
-        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
-        updateBannedIPList(); // Update the banned IP list in the admin panel
-        alert(`IP ${ipToBan} has been banned!`);
-    } else {
-        alert('IP is already banned or invalid.');
+    // Ban an IP
+    function banIP() {
+        const ipToBan = document.getElementById("ban-ip").value.trim();
+        if (ipToBan && !bannedIPs.includes(ipToBan)) {
+            bannedIPs.push(ipToBan);
+            localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+            updateBannedIPList();
+            alert(`IP ${ipToBan} has been banned.`);
+        } else {
+            alert('Invalid IP or already banned.');
+        }
     }
-}
 
-// Unban an IP address
-function unbanIP() {
-    const ipToUnban = document.getElementById("unban-ip").value.trim();
-    const index = bannedIPs.indexOf(ipToUnban);
-    if (index !== -1) {
-        bannedIPs.splice(index, 1);
-        // Save updated banned IPs to localStorage
-        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
-        updateBannedIPList(); // Update the banned IP list in the admin panel
-        alert(`IP ${ipToUnban} has been unbanned!`);
-    } else {
-        alert('IP is not banned.');
+    // Unban an IP
+    function unbanIP() {
+        const ipToUnban = document.getElementById("unban-ip").value.trim();
+        const index = bannedIPs.indexOf(ipToUnban);
+        if (index !== -1) {
+            bannedIPs.splice(index, 1);
+            localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+            updateBannedIPList();
+            alert(`IP ${ipToUnban} has been unbanned.`);
+        } else {
+            alert('IP is not banned.');
+        }
     }
-}
 
-// Update the list of recently logged IPs in the admin panel
-function updateIPList() {
-    const ipListElement = document.getElementById("ip-list");
-    ipListElement.innerHTML = ""; // Clear previous list
+    // Handle image uploads (just a simulation of approval)
+    function uploadImage() {
+        const imageFile = document.getElementById("image-upload").files[0];
+        if (imageFile) {
+            const requestId = Date.now(); // Generate a unique ID for the request
+            imageRequests.push({ id: requestId, fileName: imageFile.name, status: "pending" });
+            localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
+            alert("Image uploaded and awaiting approval.");
+            displayImageRequests();
+        }
+    }
 
-    ipList.forEach(ip => {
-        const ipItem = document.createElement("div");
-        ipItem.innerText = ip;
-        ipListElement.appendChild(ipItem);
-    });
-}
+    // Display pending image requests
+    function displayImageRequests() {
+        const imageRequestsElement = document.getElementById("image-requests");
+        imageRequestsElement.innerHTML = ""; // Clear previous list
+        imageRequests.forEach(request => {
+            const div = document.createElement("div");
+            div.textContent = `${request.fileName} - Status: ${request.status}`;
+            const approveButton = document.createElement("button");
+            approveButton.textContent = "Approve";
+            approveButton.onclick = () => approveImage(request.id);
+            div.appendChild(approveButton);
+            imageRequestsElement.appendChild(div);
+        });
+    }
 
-// Update the banned IP list in the admin panel
-function updateBannedIPList() {
-    const bannedIPListElement = document.getElementById("banned-ip-list");
-    bannedIPListElement.innerHTML = ""; // Clear previous list
+    // Approve an image upload request
+    function approveImage(requestId) {
+        const request = imageRequests.find(req => req.id === requestId);
+        if (request) {
+            request.status = "approved";
+            localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
+            alert(`Image ${request.fileName} has been approved.`);
+            displayImageRequests();
+        }
+    }
 
-    bannedIPs.forEach(ip => {
-        const ipItem = document.createElement("li");
-        ipItem.innerText = ip;
-        ipItem.classList.add('banned');
-        bannedIPListElement.appendChild(ipItem);
-    });
-}
-
-// Initialize lists when page loads
-fetchAndLogIP();
-updateBannedIPList();
-
+    // Initial Update of IP Lists
+    updateIPList();
+    updateBannedIPList();
+    displayImageRequests();
 </script>
 
 </body>
