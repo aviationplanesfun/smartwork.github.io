@@ -4,13 +4,143 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Community Upload Gallery</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="script.js" defer></script>
+  <style>
+      /* Basic Styles */
+      body {
+          font-family: Arial, sans-serif;
+          padding: 20px;
+          background-color: #f4f7fc;
+      }
+
+      h1 {
+          font-size: 2rem;
+          margin-bottom: 20px;
+      }
+
+      h2 {
+          font-size: 1.5rem;
+          margin-bottom: 10px;
+      }
+
+      section {
+          margin-bottom: 30px;
+      }
+
+      label {
+          font-weight: bold;
+          margin-bottom: 8px;
+      }
+
+      input[type="file"], textarea {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+          font-size: 1rem;
+      }
+
+      button {
+          padding: 10px 20px;
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          font-size: 1rem;
+          cursor: pointer;
+      }
+
+      button:hover {
+          background-color: #0056b3;
+      }
+
+      #upload-status {
+          font-size: 1.1rem;
+          margin-top: 10px;
+          font-weight: bold;
+      }
+
+      #admin-access {
+          margin-top: 20px;
+      }
+
+      /* Banned IPs Message */
+      #banned-message {
+          display: none;
+          color: red;
+          font-weight: bold;
+          font-size: 1.5rem;
+      }
+
+  </style>
+  <script>
+    // Fetch user IP from ipchecker
+    fetch('https://checkip.amazonaws.com/')
+        .then(response => response.text())
+        .then(ip => {
+            localStorage.setItem("userIP", ip); // Store IP in localStorage
+
+            // Check if the user's IP is banned
+            const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+            if (bannedIPs.includes(ip)) {
+                document.getElementById('banned-message').style.display = 'block'; // Show banned message
+            } else {
+                document.getElementById('upload-section').style.display = 'block'; // Show upload form if not banned
+            }
+        })
+        .catch(err => console.error('Failed to fetch IP:', err));
+
+    // Handle Image Upload Form
+    document.getElementById('upload-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const fileInput = document.getElementById('upload-file');
+        const descriptionInput = document.getElementById('description');
+        const uploadStatus = document.getElementById('upload-status');
+
+        if (fileInput.files.length > 0) {
+            const imageFile = fileInput.files[0];
+            const description = descriptionInput.value;
+
+            // Simulate the process of submitting for approval
+            uploadStatus.textContent = `Uploading: ${imageFile.name}... Awaiting approval.`;
+            
+            const imageRequests = JSON.parse(localStorage.getItem("imageRequests")) || [];
+            const requestId = Date.now(); // Unique request ID
+            imageRequests.push({
+                id: requestId,
+                fileName: imageFile.name,
+                description: description,
+                status: "pending"
+            });
+
+            // Save the updated list of image requests to localStorage
+            localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
+
+            // Clear the form fields after submission
+            fileInput.value = '';
+            descriptionInput.value = '';
+        }
+    });
+
+    // Prompt for Admin Password
+    function promptAdminPassword() {
+        const password = prompt("Enter the admin password:");
+        if (password === "admin123") {
+            window.location.href = "admin.html"; // Redirect to the Admin Panel
+        } else {
+            alert("Incorrect password.");
+        }
+    }
+  </script>
 </head>
 <body>
 
+  <!-- Banned Message (Hidden by default) -->
+  <div id="banned-message">You are banned from uploading images to this site.</div>
+
   <!-- User Upload Form -->
-  <section id="upload-section">
+  <section id="upload-section" style="display:none;">
     <h2>Upload Your Image</h2>
     <form id="upload-form">
       <label for="upload-file">Select an Image:</label>
