@@ -4,34 +4,66 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f4f7fc;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    .pending-upload {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    button {
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+  </style>
   <script>
     // Password for the admin panel
     const adminPassword = "amongus";
 
-    // Function to handle admin login check
+    // Check admin password and grant access
     function checkAdminAccess() {
         const password = prompt("Enter Admin Password:");
         if (password === adminPassword) {
             loadPendingUploads();
         } else {
             alert("Incorrect password.");
-            window.location.href = "index.html";
+            window.location.href = "index.html"; // Redirect to homepage if incorrect password
         }
     }
 
-    // Load pending uploads from localStorage
+    // Load and display pending uploads from localStorage
     function loadPendingUploads() {
         const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
         const pendingList = document.getElementById("pending-list");
-        pendingList.innerHTML = "";
+        pendingList.innerHTML = ""; // Clear existing content
 
-        pendingUploads.forEach((upload) => {
+        pendingUploads.forEach(upload => {
             if (upload.status === "pending") {
                 const uploadDiv = document.createElement("div");
                 uploadDiv.classList.add("pending-upload");
                 uploadDiv.innerHTML = `
                     <p><strong>${upload.description}</strong></p>
-                    <img src="${upload.fileName}" alt="${upload.description}" width="150">
+                    <p>File: ${upload.fileName}</p>
                     <button onclick="approveUpload(${upload.id})">Approve</button>
                     <button onclick="rejectUpload(${upload.id})">Reject</button>
                 `;
@@ -40,64 +72,40 @@
         });
     }
 
-    // Approve the upload and move it to the approved section
+    // Approve upload and change status to "approved"
     function approveUpload(id) {
         const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
         const uploadIndex = pendingUploads.findIndex(upload => upload.id === id);
-        
+
         if (uploadIndex !== -1) {
             pendingUploads[uploadIndex].status = "approved";
             localStorage.setItem("imageRequests", JSON.stringify(pendingUploads));
             alert(`Approved upload with ID: ${id}`);
-            loadPendingUploads(); // Reload the pending uploads list
+            loadPendingUploads(); // Refresh list of pending uploads
         }
     }
 
-    // Reject the upload and remove it from the list
+    // Reject upload and remove it from the list
     function rejectUpload(id) {
         let pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
         pendingUploads = pendingUploads.filter(upload => upload.id !== id);
         localStorage.setItem("imageRequests", JSON.stringify(pendingUploads));
         alert(`Rejected upload with ID: ${id}`);
-        loadPendingUploads(); // Reload the pending uploads list
+        loadPendingUploads(); // Refresh list of pending uploads
     }
 
-    // Initial check for admin access
-    if (window.location.pathname.includes("admin.html")) {
-        window.onload = checkAdminAccess;
-    }
+    // Load admin page and check access
+    window.onload = checkAdminAccess;
   </script>
-  <style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background-color: #f4f7fc;
-    }
-    h1 {
-        font-size: 2rem;
-        margin-bottom: 20px;
-    }
-    .pending-upload {
-        margin-bottom: 20px;
-    }
-    button {
-        margin-top: 10px;
-    }
-  </style>
 </head>
 <body>
 
   <h1>Admin Panel</h1>
-  <h2>Pending Uploads</h2>
 
-  <!-- Pending Uploads List -->
+  <h2>Pending Uploads</h2>
   <div id="pending-list">
     <!-- List of pending uploads will be populated here -->
   </div>
-
-  <h2>Ban/Unban Users</h2>
-  <button onclick="banIP()">Ban User</button>
-  <button onclick="unbanIP()">Unban User</button>
 
 </body>
 </html>
