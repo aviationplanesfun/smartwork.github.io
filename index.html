@@ -1,158 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community Upload Gallery</title>
-  <style>
-      body {
-          font-family: Arial, sans-serif;
-          padding: 20px;
-          background-color: #f4f7fc;
-      }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Upload Gallery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
 
-      h1 {
-          font-size: 2rem;
-          margin-bottom: 20px;
-      }
+<!-- User Upload Form -->
+<section id="upload-section">
+    <h2>Upload Your Image</h2>
+    <form id="upload-form">
+        <label for="upload-file">Select an Image:</label>
+        <input type="file" id="upload-file" name="file" accept="image/*" required>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="3" required></textarea>
+        <button type="submit">Submit for Approval</button>
+    </form>
+    <p id="upload-status"></p>
+</section>
 
-      section {
-          margin-bottom: 30px;
-      }
+<!-- Button to Access Admin Panel -->
+<section id="admin-access">
+    <button onclick="promptAdminPassword()">Go to Admin Panel</button>
+</section>
 
-      label {
-          font-weight: bold;
-          margin-bottom: 8px;
-      }
-
-      input[type="file"], textarea {
-          width: 100%;
-          padding: 10px;
-          margin-bottom: 15px;
-          border-radius: 5px;
-          border: 1px solid #ccc;
-          font-size: 1rem;
-      }
-
-      button {
-          padding: 10px 20px;
-          background-color: #007bff;
-          color: #fff;
-          border: none;
-          border-radius: 5px;
-          font-size: 1rem;
-          cursor: pointer;
-      }
-
-      button:hover {
-          background-color: #0056b3;
-      }
-
-      #upload-status {
-          font-size: 1.1rem;
-          margin-top: 10px;
-          font-weight: bold;
-      }
-
-      #upload-section {
-          display: none;
-      }
-
-      #banned-message {
-          color: red;
-          font-weight: bold;
-          font-size: 1.5rem;
-      }
-
-  </style>
-  <script>
-    // Fetch user IP from ipchecker
+<script>
+    // Check if the IP is banned
     fetch('https://checkip.amazonaws.com/')
         .then(response => response.text())
         .then(ip => {
-            localStorage.setItem("userIP", ip); // Store IP in localStorage
-
-            // Check if the user's IP is banned
             const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
             if (bannedIPs.includes(ip)) {
-                document.getElementById('banned-message').style.display = 'block'; // Show banned message
-                document.getElementById('upload-section').style.display = 'none'; // Hide upload form
+                window.location.href = "banned.html";  // Redirect if banned
             } else {
-                document.getElementById('upload-section').style.display = 'block'; // Show upload form
+                saveLatestIP(ip);
             }
         })
         .catch(err => console.error('Failed to fetch IP:', err));
 
-    // Handle Image Upload Form
-    document.getElementById('upload-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const fileInput = document.getElementById('upload-file');
-        const descriptionInput = document.getElementById('description');
-        const uploadStatus = document.getElementById('upload-status');
-
-        if (fileInput.files.length > 0) {
-            const imageFile = fileInput.files[0];
-            const description = descriptionInput.value;
-
-            // Simulate the process of submitting for approval
-            uploadStatus.textContent = `Uploading: ${imageFile.name}... Awaiting approval.`;
-
-            const imageRequests = JSON.parse(localStorage.getItem("imageRequests")) || [];
-            const requestId = Date.now(); // Unique request ID
-            imageRequests.push({
-                id: requestId,
-                fileName: imageFile.name,
-                description: description,
-                status: "pending"
-            });
-
-            // Save the updated list of image requests to localStorage
-            localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
-
-            // Clear the form fields after submission
-            fileInput.value = '';
-            descriptionInput.value = '';
+    // Save the latest IP address to localStorage (for tracking)
+    function saveLatestIP(ip) {
+        const recentIPs = JSON.parse(localStorage.getItem("recentIPs")) || [];
+        if (!recentIPs.includes(ip)) {
+            recentIPs.push(ip);
+            localStorage.setItem("recentIPs", JSON.stringify(recentIPs));
         }
-    });
-
-    // Admin password prompt
-    function promptAdminPassword() {
-      const password = prompt("Enter Admin Password:");
-      if (password === "amongus") {
-        // Redirect to admin page
-        window.location.href = "admin.html";
-      } else {
-        alert("Incorrect password.");
-      }
     }
 
-  </script>
-</head>
-<body>
+    // Admin Panel Access (with password)
+    const adminPassword = "amongus";
 
-  <!-- Banned Message (Hidden by default) -->
-  <div id="banned-message">You are banned from uploading images to this site.</div>
-
-  <!-- User Upload Form -->
-  <section id="upload-section">
-    <h1>Upload Your Image</h1>
-    <form id="upload-form">
-      <label for="upload-file">Select an Image:</label>
-      <input type="file" id="upload-file" name="file" accept="image/*" required>
-      <label for="description">Description:</label>
-      <textarea id="description" name="description" rows="3" required></textarea>
-      <button type="submit">Submit for Approval</button>
-    </form>
-    <p id="upload-status"></p>
-  </section>
-
-  <!-- Button to Access Admin Panel -->
-  <section id="admin-access">
-    <button onclick="promptAdminPassword()">Go to Admin Panel</button>
-  </section>
+    function promptAdminPassword() {
+        const password = prompt("Enter Admin Password:");
+        if (password === adminPassword) {
+            window.location.href = "admin.html";
+        } else {
+            alert("Incorrect password.");
+        }
+    }
+</script>
 
 </body>
 </html>
-
-
