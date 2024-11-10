@@ -54,7 +54,7 @@
 
 <script>
 // Global variables
-const ipList = []; // To track recent IPs
+const ipList = JSON.parse(localStorage.getItem("recentIPs")) || []; // Load recent IPs from localStorage
 const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || []; // Load banned IPs from localStorage
 
 // Fetch user IP and display it
@@ -71,10 +71,13 @@ function fetchAndLogIP() {
 
 // Log IP and display it in the admin panel
 function logIP(ip) {
+    // Avoid duplicate IPs
     if (!ipList.includes(ip)) {
         ipList.push(ip);
+        // Save the list of recent IPs to localStorage
+        localStorage.setItem("recentIPs", JSON.stringify(ipList));
     }
-    updateIPList();
+    updateIPList(); // Update the IP list in the admin panel
 }
 
 // Check if the current user is banned
@@ -90,8 +93,9 @@ function banIP() {
     const ipToBan = document.getElementById("ban-ip").value.trim();
     if (ipToBan && !bannedIPs.includes(ipToBan)) {
         bannedIPs.push(ipToBan);
-        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs)); // Save banned IPs to localStorage
-        updateBannedIPList();
+        // Save banned IPs to localStorage
+        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+        updateBannedIPList(); // Update the banned IP list in the admin panel
         alert(`IP ${ipToBan} has been banned!`);
     } else {
         alert('IP is already banned or invalid.');
@@ -104,8 +108,9 @@ function unbanIP() {
     const index = bannedIPs.indexOf(ipToUnban);
     if (index !== -1) {
         bannedIPs.splice(index, 1);
-        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs)); // Save updated banned IPs
-        updateBannedIPList();
+        // Save updated banned IPs to localStorage
+        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+        updateBannedIPList(); // Update the banned IP list in the admin panel
         alert(`IP ${ipToUnban} has been unbanned!`);
     } else {
         alert('IP is not banned.');
