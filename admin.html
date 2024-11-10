@@ -1,111 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel</title>
-  <style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background-color: #f4f7fc;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .ip-list, .upload-list {
+            margin-top: 20px;
+        }
+        .ip-list ul, .upload-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .ip-item, .upload-item {
+            margin-bottom: 10px;
+        }
+        .action-btn {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .ban-btn {
+            background-color: #dc3545;
+        }
+        .unban-btn {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
 
-    h1 {
-        font-size: 2rem;
-        margin-bottom: 20px;
-    }
+<h1>Admin Panel</h1>
 
-    .pending-upload {
-        margin-bottom: 20px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
+<h2>Latest IPs</h2>
+<div class="ip-list">
+    <ul id="ip-list"></ul>
+</div>
 
-    button {
-        padding: 5px 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+<h2>Pending Uploads</h2>
+<div class="upload-list">
+    <ul id="pending-list"></ul>
+</div>
 
-    button:hover {
-        background-color: #0056b3;
-    }
-  </style>
-  <script>
-    // Password for the admin panel
+<script>
+    // Admin password check
     const adminPassword = "amongus";
 
-    // Check admin password and grant access
     function checkAdminAccess() {
         const password = prompt("Enter Admin Password:");
         if (password === adminPassword) {
+            document.getElementById("admin-panel").style.display = "block";
             loadPendingUploads();
+            loadLatestIPs();
         } else {
             alert("Incorrect password.");
-            window.location.href = "index.html"; // Redirect to homepage if incorrect password
+            window.location.href = "index.html";
         }
     }
 
-    // Load and display pending uploads from localStorage
+    // Load the latest IPs (from localStorage)
+    function loadLatestIPs() {
+        const recentIPs = JSON.parse(localStorage.getItem("recentIPs")) || [];
+        const ipList = document.getElementById("ip-list");
+        ipList.innerHTML = "";
+
+        recentIPs.forEach(ip => {
+            const ipItem = document.createElement("li");
+            ipItem.classList.add("ip-item");
+            ipItem.innerHTML = `
+                <span>${ip}</span>
+                <button class="action-btn ban-btn" onclick="banIP('${ip}')">Ban</button>
+            `;
+            ipList.appendChild(ipItem);
+        });
+    }
+
+    // Ban IP
+    function banIP(ip) {
+        const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+        if (!bannedIPs.includes(ip)) {
+            bannedIPs.push(ip);
+            localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+            alert(`${ip} has been banned.`);
+            loadLatestIPs();  // Refresh IP list
+        }
+    }
+
+    // Unban IP
+    function unbanIP(ip) {
+        let bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+        bannedIPs = bannedIPs.filter(bannedIp => bannedIp !== ip);
+        localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+        alert(`${ip} has been unbanned.`);
+        loadLatestIPs();  // Refresh IP list
+    }
+
+    // Load pending image uploads (from localStorage)
     function loadPendingUploads() {
         const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
         const pendingList = document.getElementById("pending-list");
-        pendingList.innerHTML = ""; // Clear existing content
+        pendingList.innerHTML = "";
 
         pendingUploads.forEach(upload => {
             if (upload.status === "pending") {
-                const uploadDiv = document.createElement("div");
-                uploadDiv.classList.add("pending-upload");
-                uploadDiv.innerHTML = `
-                    <p><strong>${upload.description}</strong></p>
-                    <p>File: ${upload.fileName}</p>
-                    <button onclick="approveUpload(${upload.id})">Approve</button>
-                    <button onclick="rejectUpload(${upload.id})">Reject</button>
+                const uploadItem = document.createElement("li");
+                uploadItem.classList.add("upload-item");
+                uploadItem.innerHTML = `
+                    <span>${upload.description}</span>
+                    <button class="action-btn" onclick="approveUpload(${upload.id})">Approve</button>
+                    <button class="action-btn" onclick="rejectUpload(${upload.id})">Reject</button>
                 `;
-                pendingList.appendChild(uploadDiv);
+                pendingList.appendChild(uploadItem);
             }
         });
     }
 
-    // Approve upload and change status to "approved"
+    // Approve Image
     function approveUpload(id) {
         const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
-        const uploadIndex = pendingUploads.findIndex(upload => upload.id === id);
-
-        if (uploadIndex !== -1) {
-            pendingUploads[uploadIndex].status = "approved";
+        const upload = pendingUploads.find(upload => upload.id === id);
+        if (upload) {
+            upload.status = "approved";
             localStorage.setItem("imageRequests", JSON.stringify(pendingUploads));
             alert(`Approved upload with ID: ${id}`);
-            loadPendingUploads(); // Refresh list of pending uploads
+            loadPendingUploads();  // Refresh list
         }
     }
 
-    // Reject upload and remove it from the list
+    // Reject Image
     function rejectUpload(id) {
-        let pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
-        pendingUploads = pendingUploads.filter(upload => upload.id !== id);
-        localStorage.setItem("imageRequests", JSON.stringify(pendingUploads));
+        const pendingUploads = JSON.parse(localStorage.getItem("imageRequests")) || [];
+        const filteredUploads = pendingUploads.filter(upload => upload.id !== id);
+        localStorage.setItem("imageRequests", JSON.stringify(filteredUploads));
         alert(`Rejected upload with ID: ${id}`);
-        loadPendingUploads(); // Refresh list of pending uploads
+        loadPendingUploads();  // Refresh list
     }
 
-    // Load admin page and check access
+    // Run checkAdminAccess only if on admin.html
     window.onload = checkAdminAccess;
-  </script>
-</head>
-<body>
-
-  <h1>Admin Panel</h1>
-
-  <h2>Pending Uploads</h2>
-  <div id="pending-list">
-    <!-- List of pending uploads will be populated here -->
-  </div>
+</script>
 
 </body>
 </html>
