@@ -1,5 +1,5 @@
 // Password for the admin panel
-const adminPassword = "your_secure_password";
+const adminPassword = "amongus";
 
 // Function to prompt for password and redirect to admin page
 function promptAdminPassword() {
