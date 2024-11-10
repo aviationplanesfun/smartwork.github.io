@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - Community Upload Gallery</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        section {
+            width: 80%;
+            max-width: 1000px;
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .gallery-item {
+            width: 30%;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            max-width: 200px;
+            border-radius: 5px;
+        }
+
+        .gallery-item p {
+            font-size: 1rem;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Community Gallery</h1>
+
+    <section>
+        <h2>Approved Images</h2>
+        <div id="gallery">
+            <!-- Approved images will be displayed here -->
+        </div>
+    </section>
+
+    <script>
+        // Function to load approved images from LocalStorage and display them in the gallery
+        function loadApprovedImages() {
+            const approvedImages = JSON.parse(localStorage.getItem("approvedImages")) || [];
+            const galleryContainer = document.getElementById("gallery");
+            galleryContainer.innerHTML = ""; // Clear current gallery content
+
+            if (approvedImages.length > 0) {
+                approvedImages.forEach((image) => {
+                    const galleryItem = document.createElement("div");
+                    galleryItem.classList.add("gallery-item");
+
+                    galleryItem.innerHTML = `
+                        <img src="${image.file}" alt="${image.description}">
+                        <p>${image.description}</p>
+                    `;
+
+                    galleryContainer.appendChild(galleryItem);
+                });
+            } else {
+                galleryContainer.innerHTML = "<p>No approved images to display.</p>";
+            }
+        }
+
+        // Run loadApprovedImages on page load
+        window.onload = loadApprovedImages;
+    </script>
+
+</body>
+</html>
