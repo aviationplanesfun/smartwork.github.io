@@ -64,6 +64,7 @@ function fetchAndLogIP() {
         .then(ip => {
             document.getElementById("user-ip").innerText = ip;
             logIP(ip); // Log the IP when it is fetched
+            checkIfBanned(ip); // Check if this IP is banned
         })
         .catch(err => console.error('Failed to fetch IP:', err));
 }
@@ -74,19 +75,6 @@ function logIP(ip) {
         ipList.push(ip);
     }
     updateIPList();
-    checkIfBanned(ip);
-}
-
-// Update the list of recently logged IPs in the admin panel
-function updateIPList() {
-    const ipListElement = document.getElementById("ip-list");
-    ipListElement.innerHTML = ""; // Clear previous list
-
-    ipList.forEach(ip => {
-        const ipItem = document.createElement("div");
-        ipItem.innerText = ip;
-        ipListElement.appendChild(ipItem);
-    });
 }
 
 // Check if the current user is banned
@@ -124,6 +112,18 @@ function unbanIP() {
     }
 }
 
+// Update the list of recently logged IPs in the admin panel
+function updateIPList() {
+    const ipListElement = document.getElementById("ip-list");
+    ipListElement.innerHTML = ""; // Clear previous list
+
+    ipList.forEach(ip => {
+        const ipItem = document.createElement("div");
+        ipItem.innerText = ip;
+        ipListElement.appendChild(ipItem);
+    });
+}
+
 // Update the banned IP list in the admin panel
 function updateBannedIPList() {
     const bannedIPListElement = document.getElementById("banned-ip-list");
@@ -145,4 +145,3 @@ updateBannedIPList();
 
 </body>
 </html>
-
