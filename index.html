@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upload Test</title>
+  <title>Community Upload Gallery</title>
   <style>
       body {
           font-family: Arial, sans-serif;
           padding: 20px;
           background-color: #f4f7fc;
       }
+
       h1 {
           font-size: 2rem;
           margin-bottom: 20px;
       }
-      h2 {
-          font-size: 1.5rem;
-          margin-bottom: 10px;
-      }
+
       section {
           margin-bottom: 30px;
       }
+
       label {
           font-weight: bold;
           margin-bottom: 8px;
       }
+
       input[type="file"], textarea {
           width: 100%;
           padding: 10px;
@@ -33,6 +33,7 @@
           border: 1px solid #ccc;
           font-size: 1rem;
       }
+
       button {
           padding: 10px 20px;
           background-color: #007bff;
@@ -42,20 +43,27 @@
           font-size: 1rem;
           cursor: pointer;
       }
+
       button:hover {
           background-color: #0056b3;
       }
+
       #upload-status {
           font-size: 1.1rem;
           margin-top: 10px;
           font-weight: bold;
       }
+
       #upload-section {
           display: none;
       }
-      #admin-access {
-          margin-top: 20px;
+
+      #banned-message {
+          color: red;
+          font-weight: bold;
+          font-size: 1.5rem;
       }
+
   </style>
   <script>
     // Fetch user IP from ipchecker
@@ -67,9 +75,10 @@
             // Check if the user's IP is banned
             const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
             if (bannedIPs.includes(ip)) {
-                window.location.href = "banned.html"; // Redirect to banned page
+                document.getElementById('banned-message').style.display = 'block'; // Show banned message
+                document.getElementById('upload-section').style.display = 'none'; // Hide upload form
             } else {
-                document.getElementById('upload-section').style.display = 'block'; // Show upload form if not banned
+                document.getElementById('upload-section').style.display = 'block'; // Show upload form
             }
         })
         .catch(err => console.error('Failed to fetch IP:', err));
@@ -107,13 +116,10 @@
         }
     });
 
-    // Password for the admin panel
-    const adminPassword = "amongus";
-
-    // Function to prompt for password and redirect to admin page
+    // Admin password prompt
     function promptAdminPassword() {
       const password = prompt("Enter Admin Password:");
-      if (password === adminPassword) {
+      if (password === "amongus") {
         // Redirect to admin page
         window.location.href = "admin.html";
       } else {
@@ -125,9 +131,12 @@
 </head>
 <body>
 
+  <!-- Banned Message (Hidden by default) -->
+  <div id="banned-message">You are banned from uploading images to this site.</div>
+
   <!-- User Upload Form -->
   <section id="upload-section">
-    <h2>Upload Your Image</h2>
+    <h1>Upload Your Image</h1>
     <form id="upload-form">
       <label for="upload-file">Select an Image:</label>
       <input type="file" id="upload-file" name="file" accept="image/*" required>
@@ -145,4 +154,5 @@
 
 </body>
 </html>
+
 
