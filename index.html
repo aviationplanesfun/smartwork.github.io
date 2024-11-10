@@ -4,64 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Upload Gallery</title>
-    <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
+    <style>
+        /* General body and layout styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Section styling */
+        section {
+            width: 80%;
+            max-width: 1000px;
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Upload Form */
+        #upload-section h2 {
+            font-size: 1.5rem;
+            color: #444;
+        }
+
+        #upload-form label {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        #upload-form input,
+        #upload-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        #upload-form button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        #upload-form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Admin Access Section */
+        #admin-access {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* IP Section */
+        #ip-section {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Footer Section */
+        #footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
 
-<!-- User Upload Form -->
-<section id="upload-section">
-    <h2>Upload Your Image</h2>
-    <form id="upload-form">
-        <label for="upload-file">Select an Image:</label>
-        <input type="file" id="upload-file" name="file" accept="image/*" required>
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" rows="3" required></textarea>
-        <button type="submit">Submit for Approval</button>
-    </form>
-    <p id="upload-status"></p>
-</section>
+    <h1>Community Upload Gallery</h1>
 
-<!-- Button to Access Admin Panel -->
-<section id="admin-access">
-    <button onclick="promptAdminPassword()">Go to Admin Panel</button>
-</section>
+    <!-- User Upload Form -->
+    <section id="upload-section">
+        <h2>Upload Your Image</h2>
+        <form id="upload-form">
+            <label for="upload-file">Select an Image:</label>
+            <input type="file" id="upload-file" name="file" accept="image/*" required>
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="3" required></textarea>
+            <button type="submit">Submit for Approval</button>
+        </form>
+        <p id="upload-status"></p>
+    </section>
 
-<script>
-    // Check if the IP is banned
-    fetch('https://checkip.amazonaws.com/')
-        .then(response => response.text())
-        .then(ip => {
-            const bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
-            if (bannedIPs.includes(ip)) {
-                window.location.href = "banned.html";  // Redirect if banned
+    <!-- Button to Access Admin Panel -->
+    <section id="admin-access">
+        <button onclick="promptAdminPassword()">Go to Admin Panel</button>
+    </section>
+
+    <!-- User IP Section -->
+    <section id="ip-section">
+        <p>Your IP: <span id="user-ip">Fetching...</span></p>
+        <button class="action-btn" onclick="checkIP()">Check IP</button>
+    </section>
+
+    <div id="footer">
+        <p>Powered by Your Community</p>
+    </div>
+
+    <script>
+        // Admin password for access
+        const adminPassword = "amongus";
+
+        // Function to prompt for password and redirect to admin page
+        function promptAdminPassword() {
+            const password = prompt("Enter Admin Password:");
+            if (password === adminPassword) {
+                // Redirect to admin page
+                window.location.href = "admin.html";
             } else {
-                saveLatestIP(ip);
+                alert("Incorrect password.");
             }
-        })
-        .catch(err => console.error('Failed to fetch IP:', err));
-
-    // Save the latest IP address to localStorage (for tracking)
-    function saveLatestIP(ip) {
-        const recentIPs = JSON.parse(localStorage.getItem("recentIPs")) || [];
-        if (!recentIPs.includes(ip)) {
-            recentIPs.push(ip);
-            localStorage.setItem("recentIPs", JSON.stringify(recentIPs));
         }
-    }
 
-    // Admin Panel Access (with password)
-    const adminPassword = "amongus";
-
-    function promptAdminPassword() {
-        const password = prompt("Enter Admin Password:");
-        if (password === adminPassword) {
-            window.location.href = "admin.html";
-        } else {
-            alert("Incorrect password.");
+        // Function to check user's IP using the checkip.amazonaws.com API
+        async function checkIP() {
+            try {
+                const response = await fetch('https://checkip.amazonaws.com/');
+                const ip = await response.text();
+                document.getElementById('user-ip').textContent = ip;
+                saveUserIP(ip);
+            } catch (error) {
+                alert("Unable to fetch IP.");
+            }
         }
-    }
-</script>
 
+        // Save the user's IP to LocalStorage
+        function saveUserIP(ip) {
+            const recentIPs = JSON.parse(localStorage.getItem("recentIPs")) || [];
+            if (!recentIPs.includes(ip)) {
+                recentIPs.push(ip);
+                localStorage.setItem("recentIPs", JSON.stringify(recentIPs));
+            }
+        }
+
+        // Image upload handling
+        const uploadForm = document.getElementById("upload-form");
+        uploadForm.addEventListener("submit", handleUpload);
+
+        function handleUpload(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById("upload-file");
+            const description = document.getElementById("description").value;
+
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Please select an image to upload.");
+                return;
+            }
+
+            const imageRequest = {
+                id: new Date().getTime(),
+                file: URL.createObjectURL(file),  // For demo purposes, use Object URL
+                description: description,
+                status: "pending"
+            };
+
+            const imageRequests = JSON.parse(localStorage.getItem("imageRequests")) || [];
+            imageRequests.push(imageRequest);
+            localStorage.setItem("imageRequests", JSON.stringify(imageRequests));
+
+            document.getElementById("upload-status").textContent = "Your upload is pending approval.";
+        }
+
+        // Load IP when the page loads
+        window.onload = checkIP;
+    </script>
 </body>
 </html>
+
