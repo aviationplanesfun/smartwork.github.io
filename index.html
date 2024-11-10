@@ -1,51 +1,150 @@
 <!DOCTYPE html>
-<html lang=\de\<head>
-<meta charset=\UTF-8\ <meta name=\viewport\ content=\width=device-width, initial-scale=1.0\ <title>Foto Upload Website</title>
-<link rel=\stylesheet\ href=\styles.css\ <style>
-body {
-font-family: Arial, sans-serif;
-background-color: #f4f4f4;
-margin: 0;
-padding: 20px;
-}
-.container {
-max-width: 600px;
-margin: auto;
-background: white;
-padding: 20px;
-border-radius: 8px;
-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-h1 {
-text-align: center;
-}
-input[type=\file\ {
-margin: 20px 0;
-}
-button {
-display: block;
-width: 100%;
-padding: 10px;
-border: none;
-background-color: #007bff;
-color: white;
-font-size: 16px;
-border-radius: 5px;
-cursor: pointer;
-}
-button:hover {
-background-color: #0056b3;
-}
-</style>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Upload Gallery</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
 
-<div class=\container\ <h1>Foto Hochladen</h1>
-<form action=\upload\ method=\POST\ enctype=\multipart/form-data\ <label for=\fileInput\Wählen Sie ein Foto aus:</label>
-<input type=\file\ id=\fileInput\ name=\fileInput\ accept=\image/*\ required>
-<button type=\submit\Hochladen</button>
-</form>
-</div>
+  <!-- User Upload Form -->
+  <section id="upload-section">
+    <h2>Upload Your Image</h2>
+    <form id="upload-form">
+      <label for="upload-file">Select an Image:</label>
+      <input type="file" id="upload-file" name="file" accept="image/*" required>
+      <label for="description">Description:</label>
+      <textarea id="description" name="description" rows="3" required></textarea>
+      <button type="submit">Submit for Approval</button>
+    </form>
+    <p id="upload-status"></p>
+  </section>
+
+  <!-- Admin Panel (Only Visible to Admins) -->
+  <section id="admin-panel" style="display:none;">
+    <h2>Admin Panel</h2>
+    <div id="pending-uploads">
+      <h3>Pending Uploads</h3>
+      <div id="pending-list"></div>
+    </div>
+  </section>
+
+  <!-- Image Library -->
+  <section id="image-library" style="display:none;">
+    <h2>Image Library</h2>
+    <div id="gallery"></div>
+  </section>
+
+  <script>
+    // Simulated user authentication and admin access
+    let isAdmin = false; // Set this based on the logged-in user's role
+    let hasApprovedUpload = false; // Track if user has an approved upload
+
+    // Display the relevant sections based on user role and permissions
+    document.addEventListener("DOMContentLoaded", () => {
+      if (isAdmin) {
+        document.getElementById("admin-panel").style.display = "block";
+        loadPendingUploads();
+      } else if (hasApprovedUpload) {
+        document.getElementById("image-library").style.display = "block";
+        loadApprovedImages();
+      }
+    });
+
+    // User Upload Form Submission
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById("upload-file");
+      const description = document.getElementById("description").value;
+
+      if (fileInput.files.length === 0) {
+        alert("Please select an image file to upload.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("description", description);
+
+      // Placeholder function for sending data to server
+      const uploadStatus = await sendUpload(formData);
+
+      document.getElementById("upload-status").textContent = uploadStatus ? "Upload submitted for approval!" : "Upload failed.";
+    });
+
+    // Function to send upload data to backend (to be implemented server-side)
+    async function sendUpload(formData) {
+      // Simulate upload request
+      return true; // Return true if successful, else false
+    }
+
+    // Load pending uploads for the admin
+    async function loadPendingUploads() {
+      // Placeholder function - replace with actual backend call
+      const pendingUploads = [
+        { id: 1, file: "image1.jpg", description: "First image", userId: 123 },
+        { id: 2, file: "image2.jpg", description: "Second image", userId: 124 }
+      ];
+
+      const pendingList = document.getElementById("pending-list");
+      pendingList.innerHTML = "";
+
+      pendingUploads.forEach((upload) => {
+        const uploadDiv = document.createElement("div");
+        uploadDiv.classList.add("pending-upload");
+
+        uploadDiv.innerHTML = `
+          <p><strong>${upload.description}</strong></p>
+          <img src="${upload.file}" alt="${upload.description}" width="150">
+          <button onclick="approveUpload(${upload.id}, ${upload.userId})">Approve</button>
+          <button onclick="rejectUpload(${upload.id})">Reject</button>
+        `;
+
+        pendingList.appendChild(uploadDiv);
+      });
+    }
+
+    // Approve upload (admin only)
+    async function approveUpload(uploadId, userId) {
+      // Placeholder function - replace with actual backend call
+      alert(`Approved upload ID: ${uploadId}`);
+      // Mark user as having an approved upload
+      if (userId === currentUser.id) hasApprovedUpload = true;
+    }
+
+    // Reject upload (admin only)
+    async function rejectUpload(uploadId) {
+      // Placeholder function - replace with actual backend call
+      alert(`Rejected upload ID: ${uploadId}`);
+    }
+
+    // Load approved images for library
+    async function loadApprovedImages() {
+      // Placeholder function - replace with actual backend call
+      const approvedImages = [
+        { file: "approved1.jpg", description: "Approved image 1" },
+        { file: "approved2.jpg", description: "Approved image 2" }
+      ];
+
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      approvedImages.forEach((image) => {
+        const imageDiv = document.createElement("div");
+        imageDiv.classList.add("image-item");
+
+        imageDiv.innerHTML = `
+          <img src="${image.file}" alt="${image.description}" width="150">
+          <p>${image.description}</p>
+        `;
+
+        gallery.appendChild(imageDiv);
+      });
+    }
+  </script>
 
 </body>
 </html>
+
