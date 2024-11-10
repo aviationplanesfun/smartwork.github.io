@@ -108,6 +108,26 @@
             font-size: 0.9rem;
             color: #888;
         }
+
+        /* Button to Go to Gallery */
+        #gallery-access {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #gallery-access button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        #gallery-access button:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -136,6 +156,11 @@
     <section id="ip-section">
         <p>Your IP: <span id="user-ip">Fetching...</span></p>
         <button class="action-btn" onclick="checkIP()">Check IP</button>
+    </section>
+
+    <!-- Button to Go to Gallery -->
+    <section id="gallery-access">
+        <button onclick="window.location.href='gallery.html'">Go to Gallery</button>
     </section>
 
     <div id="footer">
